@@ -17,8 +17,8 @@ jobs:
     - name: Build
       run: |
         cargo install cross
-        cross build --target x86_64-pc-windows-gnu
-        ls -l
+        cross build --release --target x86_64-pc-windows-gnu
+        ls -l target/x86_64-pc-windows-gnu/release/
 #    - name: Build
 #      run: |
 #        env
