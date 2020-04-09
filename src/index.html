@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ha - Looking Glass</title>
+    <link href="index.css" rel="stylesheet">
+</head>
+<body>
+<!-- Container -->
+<div class="container">
+
+    <!-- Header -->
+    <header class="header nohighlight" id="overview">
+        <div class="row">
+            <div class="span12">
+                <h1><span id="title"></span></h1>
+            </div>
+        </div>
+
+    </header>
+
+    <!-- Network Information -->
+    <section id="information">
+        <div class="row">
+            <div class="span12">
+                <div class="well">
+                    <span id="legend">Network information</span><!-- IE/Safari dislike <legend> out of context -->
+                    <p>Server Location: <b id="sl"></b></p>
+                    <div style="margin-left: 10px;">
+                        <p>Company: <span id="cp"></span> </p>
+                        <p>Data Center: <span id="dc"></span> </p>
+                        <p>Test IPv4: <span id="sip"></span></p>
+                        <p>Test files: <a href="/down/30" style="text-decoration: none"><code style="font-size: 1.2em">
+                                    30M </code></a><a href="/down/100" style="text-decoration: none"><code
+                                        style="font-size: 1.2em"> 100M </code></a><a href="/down/500"
+                                                                                     style="text-decoration: none"><code
+                                        style="font-size: 1.2em"> 500M </code></a></p>
+                    </div>
+                    <p>Your Location: <b id="ll"></b></p>
+                    <div style="margin-left: 10px;">
+                        <p>IP Address: <b><a href="###" id="cip" onclick="addIp()"></a></b></p>
+                        <p >ISP: <span id="isp"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Network Tests -->
+    <section id="tests">
+        <div class="row">
+            <div class="span12">
+                <div class="well form-inline" id="networktest">
+                    <span id="legend">Network tests</span>
+                    <div id="hosterror" class="control-group">
+                        <div class="controls">
+                            <input id="host" name="host" type="text" class="input-large"
+                                   placeholder="Host or IP address">
+                        </div>
+                    </div>
+                    <select id="cmd" class="input-medium" style="margin-left: 5px;">
+                        <option value="ping" selected="selected">ping</option>
+                        <option value="host">host</option>
+                        <option value="mtr">mtr</option>
+                        <option value="traceroute">traceroute</option>
+                        <option value="nslookup">nslookup</option>
+                        <option value="dig">dig</option>
+                    </select>
+                    <button type="submit" id="submit" onclick="submit()" class="btn btn-primary"
+                            style="margin-left: 10px;">Run Test
+                    </button>
+                    <code id="note" style="font-size:1.2em "></code>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results -->
+    <section id="results" style="display: none">
+        <div class="row">
+            <div class="span12">
+                <div class="well">
+                    <span id="legend">Results</span>
+                    <pre id="response"></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer nohighlight">
+
+        <p>Powered by <a href="http://github.com/telephone/LookingGlass">LookingGlass</a></p>
+    </footer>
+
+</div><!-- /container -->
+</body>
+<script>
+    const URL = "http://ip-api.com/json/";
+
+    let cip = document.querySelector("#cip"),
+        host = document.querySelector("#host"),
+        cmd = document.querySelector("#cmd"),
+        note = document.querySelector("#note"),
+        rsp = document.querySelector("#response"),
+        btn = document.querySelector("#submit"),
+        result = document.querySelector("#results"),
+        sip = document.querySelector("#sip"),
+        sl = document.querySelector("#sl"),
+        ll = document.querySelector("#ll"),
+        title = document.querySelector("#title"),
+        isp = document.querySelector("#isp"),
+        dc = document.querySelector("#dc"),
+        cp = document.querySelector("#cp");
+    window.onload = function () {
+        let request = new XMLHttpRequest();
+        request.open("GET", "/api/index");
+        request.onload = function () {
+            if (this.status === 200) {
+                let data = JSON.parse(this.response);
+                title.textContent = data.site + " Looking Glass";
+                cip.textContent = data.cIp;
+                sip.textContent = data.sInfo.query;
+                sl.textContent = data.sInfo.city + ", " + data.sInfo.countryCode;
+                dc.textContent = data.sInfo.isp;
+                cp.textContent = data.sInfo.org;
+            }
+        };
+        request.send();
+
+        let ipRequest = new XMLHttpRequest();
+        ipRequest.open("GET", URL);
+        ipRequest.onload = function () {
+            if (this.status === 200) {
+                let data = JSON.parse(this.response);
+                ll.textContent = data.city + ", " + data.countryCode
+                isp.textContent = data.isp
+            }
+        };
+        ipRequest.send();
+    };
+
+    function addIp() {
+        host.value = cip.textContent
+    }
+
+    function submit() {
+
+        btn.textContent = "Loading...";
+        btn.setAttribute("disabled", "true");
+        note.textContent = "";
+        result.style.display = "none";
+        let request = new XMLHttpRequest();
+        request.open("GET", "/api/" + cmd.value + "/" + host.value);
+        request.onload = function () {
+            if (this.status === 200) {
+                let data = JSON.parse(this.response);
+                if (data.code === 200) {
+                    rsp.textContent = data.data;
+                    result.style.display = "block"
+                } else {
+                    note.textContent = data.msg
+                }
+            }
+            btn.removeAttribute("disabled");
+            btn.textContent = "Run Test"
+
+        };
+        request.send();
+    }
+</script>
+</html>
