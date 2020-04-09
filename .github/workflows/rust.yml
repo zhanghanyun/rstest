@@ -9,16 +9,17 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
     #- uses: actions/checkout@v2
     - uses: actions/checkout@v2
     - name: Build
       run: |
-        cargo install cross
-        cross build --release --target x86_64-pc-windows-gnu
-        ls -l target/x86_64-pc-windows-gnu/release/
+        cargo -V
+        cargo build --release
 #    - name: Build
 #      run: |
 #        env
