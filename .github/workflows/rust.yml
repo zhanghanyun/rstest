@@ -19,7 +19,7 @@ jobs:
     - name: Build
       run: |
         cargo -V
-        cargo build --release
+        rustup show
 #    - name: Build
 #      run: |
 #        env
